@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Word Guessing Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .game {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .word {
+      font-size: 24px;
+      letter-spacing: 8px;
+      margin: 15px 0;
+    }
+
+    .info {
+      margin: 10px 0;
+      font-size: 14px;
+    }
+
+    input {
+      padding: 8px;
+      font-size: 16px;
+      width: 60px;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 8px 15px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="game">
+    <h1>Word Guess</h1>
+
+    <div class="word" id="wordDisplay"></div>
+
+    <div class="info">
+      Wrong guesses left: <span id="attempts">6</span>
+    </div>
+
+    <input
+      type="text"
+      id="letterInput"
+      maxlength="1"
+      placeholder="A-Z"
+    />
+
+    <br />
+    <button onclick="guessLetter()">Guess</button>
+    <button onclick="resetGame()">Restart</button>
+
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    const words = ["JAVASCRIPT", "BROWSER", "NETLIFY", "CODING", "DEVELOPER"];
+    let selectedWord;
+    let guessedLetters;
+    let attemptsLeft;
+
+    function startGame() {
+      selectedWord = words[Math.floor(Math.random() * words.length)];
+      guessedLetters = [];
+      attemptsLeft = 6;
+      document.getElementById("message").textContent = "";
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      const display = selectedWord
+        .split("")
+        .map(letter => (guessedLetters.includes(letter) ? letter : "_"))
+        .join(" ");
+
+      document.getElementById("wordDisplay").textContent = display;
+      document.getElementById("attempts").textContent = attemptsLeft;
+
+      if (!display.includes("_")) {
+        document.getElementById("message").textContent = "🎉 You won!";
+      } else if (attemptsLeft === 0) {
+        document.getElementById("message").textContent =
+          "❌ Game over! Word was: " + selectedWord;
+      }
+    }
+
+    function guessLetter() {
+      const input = document.getElementById("letterInput");
+      const letter = input.value.toUpperCase();
+      input.value = "";
+
+      if (!letter || guessedLetters.includes(letter) || attemptsLeft === 0) {
+        return;
+      }
+
+      guessedLetters.push(letter);
+
+      if (!selectedWord.includes(letter)) {
+        attemptsLeft--;
+      }
+
+      updateDisplay();
+    }
+
+    function resetGame() {
+      startGame();
+    }
+
+    startGame();
+  </script>
+</body>
+</html>index.html
