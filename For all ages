@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Word Guessing Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .game {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      width: 340px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .word {
+      font-size: 28px;
+      letter-spacing: 10px;
+      margin: 15px 0;
+      font-family: "Courier New", monospace;
+    }
+
+    .info {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .attempts-bar {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .attempt {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #dfe6ee;
+    }
+
+    .attempt.used {
+      background: #ff6b6b;
+    }
+
+    input {
+      padding: 8px;
+      font-size: 16px;
+      width: 64px;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 8px 12px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+    }
+
+    button.secondary {
+      background: #6c757d;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .message {
+      margin-top: 12px;
+      font-weight: bold;
+      min-height: 1.2em;
+    }
+
+    .guessed {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="game">
+    <h1>Word Guess</h1>
+
+    <div class="word" id="wordDisplay"></div>
+
+    <div class="info">
+      Wrong guesses left: <span id="attempts">6</span>
+      <div class="attempts-bar" id="attemptsBar"></div>
+    </div>
+
+    <input id="letterInput" maxlength="1" placeholder="A" />
+
+    <div class="controls">
+      <button id="guessBtn">Guess</button>
+      <button id="restartBtn" class="secondary">Restart</button>
+    </div>
+
+    <div class="message" id="message"></div>
+    <div class="guessed" id="guessedList"></div>
+  </div>
+
+  <script>
+    const words = ["JAVASCRIPT", "BROWSER", "NETLIFY", "CODING", "DEVELOPER"];
+
+    let selectedWord = "";
+    let guessedLetters = [];
+    let attemptsLeft = 6;
+    const maxAttempts = 6;
+
+    const wordDisplay = document.getElementById("wordDisplay");
+    const attemptsEl = document.getElementById("attempts");
+    const attemptsBar = document.getElementById("attemptsBar");
+    const input = document.getElementById("letterInput");
+    const guessBtn = document.getElementById("guessBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const message = document.getElementById("message");
+    const guessedList = document.getElementById("guessedList");
+
+    function startGame() {
+      selectedWord = words[Math.floor(Math.random() * words.length)];
+      guessedLetters = [];
+      attemptsLeft = maxAttempts;
+      message.textContent = "";
+      input.disabled = false;
+      guessBtn.disabled = false;
+      updateDisplay();
+      updateAttempts();
+      input.focus();
+    }
+
+    function updateAttempts() {
+      attemptsEl.textContent = attemptsLeft;
+      attemptsBar.innerHTML = "";
+      for (let i = 0; i < maxAttempts; i++) {
+        const dot = document.createElement("div");
+        dot.className = "attempt" + (i >= attemptsLeft ? " used" : "");
+        attemptsBar.appendChild(dot);
+      }
+    }
+
+    function updateDisplay() {
+      wordDisplay.textContent = selectedWord
+        .split("")
+        .map(l => guessedLetters.includes(l) ? l : "_")
+        .join(" ");
+
+      guessedList.textContent =
+        "Guessed: " + (guessedLetters.length ? guessedLetters.join(", ") : "—");
+
+      if (!wordDisplay.textContent.includes("_")) {
+        message.textContent = "🎉 You won!";
+        endGame();
+      }
+
+      if (attemptsLeft <= 0) {
+        message.textContent = "❌ Game over! Word was: " + selectedWord;
+        endGame();
+      }
+    }
+
+    function guessLetter() {
+      if (attemptsLeft <= 0) return;
+
+      const letter = input.value.toUpperCase();
+      input.value = "";
+
+      if (!/^[A-Z]$/.test(letter)) {
+        message.textContent = "Enter a letter A–Z";
+        return;
+      }
+
+      if (guessedLetters.includes(letter)) {
+        message.textContent = "Already guessed!";
+        return;
+      }
+
+      guessedLetters.push(letter);
+
+      if (!selectedWord.includes(letter)) {
+        attemptsLeft--;
+        message.textContent = "Wrong guess!";
+      } else {
+        message.textContent = "Correct!";
+      }
+
+      updateAttempts();
+      updateDisplay();
+    }
+
+    function endGame() {
+      input.disabled = true;
+      guessBtn.disabled = true;
+    }
+
+    guessBtn.onclick = guessLetter;
+    restartBtn.onclick = startGame;
+
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") guessLetter();
+    });
+
+    input.addEventListener("input", () => {
+      input.value = input.value.toUpperCase().replace(/[^A-Z]/g, "");
+    });
+
+    startGame();
+  </script>
+</body>
+</html>
